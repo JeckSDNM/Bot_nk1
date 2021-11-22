@@ -15,23 +15,23 @@ all_t_q = Person.char_params()
 class Bot:
     __emp_count = 0
 
-    def __init__(self, path_exel_doc=''):
+    def __init__(self):
         Bot.__emp_count += 1
-        self.exelDoc = path_exel_doc
+        self.__exelDoc = ''
         self.__get_code_list()
         self.__student_code = ''
         self.__result = ''
         print('Бот создан')
-
+        self.__check_exel_doc()
         self.driver = None
 
     @staticmethod
     def __interval():
-        sleep(randint(2, 6))
+        sleep(randint(2, 5))
 
     @staticmethod
     def __start_driver():
-        print('Запуск драйвера')
+        print('Запуск драйвера...')
         try:
             return webdriver.Chrome()
         except:
@@ -41,11 +41,23 @@ class Bot:
                 print("Не найден подходязий браузер")
                 return sys.exit()
 
+    def __get_path(self):
+        path_exel_doc = input('Введите путь к таблице логинов(если есть): \n').strip()
+        if os.path.exists(path_exel_doc):
+            self.__exelDoc = path_exel_doc
+
+        elif len(path_exel_doc) < 3 and path_exel_doc in ['', ' ']:
+            self.__exelDoc = ''
+        else:
+            print('Файла не существует.')
+            self.__get_path()
+
+
     # ######################################## Работа со списком exel
     def __get_code_list(self):
-        if self.exelDoc != '':
-            self.__check_exel_doc()
-            exel = pd.read_excel(self.exelDoc)
+        if self.__exelDoc != '':
+            # self.__check_exel_doc()
+            exel = pd.read_excel(self.__exelDoc)
             log_list1 = exel['Логин'].tolist()
             log_list2 = self.__data_frame['Логин'].tolist()
             self.__code_list = list((set(log_list1) - set(log_list2))) + list((set(log_list2) - set(log_list1)))
@@ -76,8 +88,8 @@ class Bot:
         self.driver.get('https://spt.kuzrc.ru/')
 
     def __set_student_code(self):
-        if self.exelDoc == '':
-            self.__student_code = input('Введите код студента\n')
+        if self.__exelDoc == '':
+            self.__student_code = input('Введите код студента: ')
         else:  # метод для пандас таблицы
             self.__student_code = self.__get_student_code()
 
@@ -93,7 +105,7 @@ class Bot:
             logic = False
 
         if logic:
-            # print(self.__student_code, ': Код не верный или уже используется')
+            print(self.__student_code, ': Код не верный или уже используется')
             self.__result = 'Неверный'
             self.__saved_data()
             self.__set_student_code()
@@ -130,6 +142,14 @@ class Bot:
                 print('Нет в ', k)
                 but_arr[-3].click()
 
+    def __set_result(self):
+        result = self.driver.find_element(By.XPATH, '/html/body/div[2]/main/div[1]/div/div/div/div[2]/div[2]/div[1]')
+        if result.text.find('Вы успешно прошли социально-психологический тест.') != -1:
+            a = 'Успех'
+        else:
+            a = 'Провал'
+        self.__result = 'Пройдено' + a
+
     def _start(self):
         if self.driver is None:
             self.driver = self.__start_driver()
@@ -140,30 +160,28 @@ class Bot:
             self.__test()
         sleep(0.5)
 
-        if self.driver.find_element(By.XPATH, '/html/body/div[2]/main/div[1]/div/div/div/div[2]/div[2]/div[1]').text.find('Вы успешно прошли социально-психологический тест.') != -1:
-            a = 'Успех'
-        else:
-            a = 'Провал'
-        self.__result = 'Пройдено' + a
+        self.__set_result()
         self.__saved_data()
 
     def main(self):
-        nm_repeat = 0
-        try:
-            nm_repeat = 1  # int(input('Введите число повторений: '))
-        except:
-            print('Значение должно быть числом')
-            self.main()
-        print(nm_repeat)
+        if self.__exelDoc != '':
+            nm_repeat = 0
+            try:
+                nm_repeat = int(input('Введите число повторений: '))
+            except:
+                print('Значение должно быть числом')
+                self.main()
 
-        for i in range(nm_repeat):
+            for i in range(nm_repeat):
 
+                self._start()
+        else:
             self._start()
 
 
-name_exel_doc = 'exel_doc/Kopia_Kopia_NOVYE_Vygruzka_SPO_GPOU_Kuznetskiy_industrialny_tekhnikum_1546sht.xlsx'
-# input('Введите путь к таблице кодов(если есть): \n') #
+name_exel_doc = input('Введите путь к таблице кодов(если есть): \n')
+# input('Введите путь к таблице кодов(если есть): \n')
 # 'exel_doc/Kopia_Kopia_NOVYE_Vygruzka_SPO_GPOU_Kuznetskiy_industrialny_tekhnikum_1546sht.xlsx'
 
-bot1 = Bot(name_exel_doc)
+bot1 = Bot()
 bot1.main()
