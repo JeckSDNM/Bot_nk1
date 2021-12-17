@@ -12,8 +12,18 @@ from char_params import Person
 all_t_q = Person.char_params()
 
 
+def get_link():
+    with open('Type_Char.txt', 'r', encoding="cp1251") as TC:
+        for line in TC:
+            split_line = line.strip().split(' ')
+
+            if 'URL:' in split_line:
+                return split_line[-1].strip()
+
+
 class Bot:
     __emp_count = 0
+    url = get_link()  # https://spt.kuzrc.ru/
 
     def __init__(self):
         Bot.__emp_count += 1
@@ -71,7 +81,7 @@ class Bot:
     '''Выборка столбца логинов если есть файл'''
     def __get_code_list(self):
         exel = pd.read_excel(self.__exelDoc)
-        name_column = 'Лгин'
+        name_column = 'Логин'
         if name_column not in exel.columns:
             while name_column not in exel.columns:
                 name_column = input('Не найден столбец логинов.\nВведите название столбца.\n=>')
@@ -156,7 +166,7 @@ class Bot:
         self.__result = 'Пройдено' + a
 
     def __up_link(self):
-        self.driver.get('https://spt.kuzrc.ru/')
+        self.driver.get()
 
     def _start(self):
         if self.driver is None:

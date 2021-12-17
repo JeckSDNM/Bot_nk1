@@ -216,6 +216,8 @@ class Character:
             for line in TC:
                 resp = ''
                 line = line.strip()
+                if 'URL:' not in line:
+                    continue
                 if line != '' and line[0] != '#':
                     split_line = line.split(':')
                     split_line = [i.strip() for i in split_line]
