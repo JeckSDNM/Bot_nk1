@@ -166,7 +166,7 @@ class Bot:
         self.__result = 'Пройдено' + a
 
     def __up_link(self):
-        self.driver.get()
+        self.driver.get(self.url)
 
     def _start(self):
         if self.driver is None:
